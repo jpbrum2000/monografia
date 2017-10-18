@@ -1,0 +1,1 @@
+for i in {00..99}; do echo "convert mediumresidential$i.tif mediumresidential$i.ppm"; done > tmp
