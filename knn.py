@@ -1,20 +1,29 @@
 #!/home/joao/anaconda3/bin/python3.6
 import numpy as np
-from sklearn import datasets
+from subprocess import PIPE, run
 
-iris = datasets.load_iris()
-iris_data = iris.data
-iris_labels = iris.target
-#print(iris_data[0], iris_data[79], iris_data[100],"\n")
-#print(iris_labels[0], iris_labels[79], iris_labels[100])
+#
+# load path location and class name of objects
 
-np.random.seed(42)
-indices = np.random.permutation(len(iris_data))
-n_training_samples = 12
-learnset_data = iris_data[indices[:-n_training_samples]]
-learnset_labels = iris_labels[indices[:-n_training_samples]]
-testset_data = iris_data[indices[-n_training_samples:]]
-testset_labels = iris_labels[indices[-n_training_samples:]]
+objetos = np.empty([2100], dtype=object)
+labels = np.empty([2100], dtype=object)
+classes = np.array(["agricultural","airplane","baseballdiamond","beach","buildings","chaparral","denseresidential","forest","freeway","golfcourse","harbor","intersection","mediumresidential","mobilehomepark","overpass","parkinglot","river","runway","sparseresidential","storagetanks","tenniscourt"])
+index=0
+for y in range(0,21):
+    for x in range(0,100):
+        objetos[index] = "UCMerced_LandUse/Images/"+classes[y]+"/"+classes[y]+str(x).zfill(2) +".fv"
+        labels[index] = classes[y]
+        index += 1
+   
+#print(labels[299])
+
+np.random.seed(2)
+indices = np.random.permutation(len(objetos))
+n_training_samples = 10
+learnset_data = objetos[indices[:-n_training_samples]]
+learnset_labels = labels[indices[:-n_training_samples]]
+testset_data = objetos[indices[-n_training_samples:]]
+testset_labels = labels[indices[-n_training_samples:]]
 #print(learnset_data[:4], learnset_labels[:4])
 #print(testset_data[:4], testset_labels[:4])
 
@@ -39,12 +48,11 @@ testset_labels = iris_labels[indices[-n_training_samples:]]
 #       ax.scatter(X[iclass][0], X[iclass][1], X[iclass][2], c=colour [iclass])
 #plt.show()
 def distance(instance1, instance2):
-    # just in case, if the instances are lists or tuples:
-    instance1 = np.array(instance1) 
-    instance2 = np.array(instance2)
+    command = ["bic/source/bin/bic_distance",instance1,instance2]
+    result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     
-    return np.linalg.norm(instance1 - instance2)
-#print(distance([1, 1], [2, 2]))
+    return result.stdout
+#print(distance(learnset_data[1], learnset_data[2]))
 #print(distance(learnset_data[3], learnset_data[44]))
 
 def get_neighbors(training_set, 
@@ -73,13 +81,13 @@ def get_neighbors(training_set,
     return neighbors
 
 #test with 5 firsts item from testset
-for i in range(5):
-    neighbors = get_neighbors(learnset_data, 
-                              learnset_labels, 
-                              testset_data[i], 
-                              3, 
-                              distance=distance)
-    #print(i,testset_data[i],testset_labels[i],neighbors,'\n')
+#for i in range(5):
+#    neighbors = get_neighbors(learnset_data, 
+#                              learnset_labels, 
+#                              testset_data[i], 
+#                              4, 
+#                              distance=distance)
+#    #print(i,testset_data[i],testset_labels[i],neighbors,'\n')
 
 from collections import Counter
 
@@ -90,13 +98,16 @@ def vote_prob(neighbors):
     labels, votes = zip(*class_counter.most_common())
     winner = class_counter.most_common(1)[0][0]
     votes4winner = class_counter.most_common(1)[0][1]
-    return winner, votes4winner/sum(votes)
+    if (votes4winner/sum(votes) > 0.5):
+        return winner, votes4winner/sum(votes)
+    else:
+        return 'unknow', votes4winner/sum(votes)
 
 for i in range(n_training_samples):
     neighbors = get_neighbors(learnset_data, 
                               learnset_labels, 
                               testset_data[i], 
-                              5, 
+                              100, 
                               distance=distance)
     print("index: ", i, 
           ", vote_prob: ", vote_prob(neighbors), 
