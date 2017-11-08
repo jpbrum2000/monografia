@@ -33,3 +33,54 @@ treino = objetos_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
 treino_labels = labels_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
 test = np.append(objetos_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
 test_labels = np.append(labels_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
+
+#--
+# Passo 4
+# Definir função de calculo de distancia distance
+#----------
+def distance(instance1, instance2):
+    command = ["bic/source/bin/bic_distance",instance1,instance2]
+    result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    
+    return result.stdout
+#print(distance(learnset_data[1], learnset_data[2]))
+#print(distance(learnset_data[3], learnset_data[44]))
+
+#--
+# Passo 5
+# Definir função de busca dos k vizinhos mais proximos
+#----------
+def get_neighbors(training_set, 
+                  labels, 
+                  test_instance, 
+                  k, 
+                  distance=distance):
+    """
+    get_neighbors calculates a list of the k nearest neighbors
+    of an instance 'test_instance'.
+    The list neighbors contains 3-tuples with  
+    (index, dist, label) where 
+    index    is the index from the training_set, 
+    dist     is the distance between the test_instance and the 
+             instance training_set[index]
+    distance is a reference to a function used to calculate the 
+             distances
+    """
+    distances = []
+    for index in range(len(training_set)):
+        dist = distance(test_instance, training_set[index])
+        distances.append((training_set[index], dist, labels[index]))
+    distances.sort(key=lambda x: x[1])
+    neighbors = distances[:k]
+    return neighbors
+
+#--
+# Passo 6
+# Preencher confusion Matriz
+#----------
+
+#--
+# Passo 6
+# Calcular F-measure da Confusion Matriz
+#----------
+
