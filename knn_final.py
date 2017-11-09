@@ -48,7 +48,7 @@ def distance(instance1, instance2):
 
 #--
 # Passo 5
-# Definir função de busca dos k vizinhos mais proximos
+# Definir função de busca dos k vizinhos mais proximos e ordena por numero de votos
 #----------
 def get_neighbors(training_set, 
                   labels, 
@@ -76,11 +76,27 @@ def get_neighbors(training_set,
 
 #--
 # Passo 6
+# Escolher a Classe ganhadora
+#----------
+def vote_prob(neighbors):
+    class_counter = Counter()
+    for neighbor in neighbors:
+        class_counter[neighbor[2]] += 1
+    labels, votes = zip(*class_counter.most_common())
+    winner = class_counter.most_common(1)[0][0]
+    votes4winner = class_counter.most_common(1)[0][1]
+    if (votes4winner/sum(votes) > 0.5):
+        return winner, votes4winner/sum(votes)
+    else:
+        return 'unknow', votes4winner/sum(votes)
+    
+#--
+# Passo 7
 # Preencher confusion Matriz
 #----------
 
 #--
-# Passo 6
+# Passo 8
 # Calcular F-measure da Confusion Matriz
 #----------
 
