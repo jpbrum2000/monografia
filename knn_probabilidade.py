@@ -1,8 +1,3 @@
-#!/home/joao/anaconda3/bin/python3.6
-import numpy as np
-import sys
-from subprocess import PIPE, run
-
 #--
 # Passo 1
 # Carregar classes
@@ -32,25 +27,12 @@ objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhec
 # Dividir Treino e Teste
 #treino 50% dos conhecido 
 #test = 50% dos conhecido e desconhecidos
-#balanceando quantidade de cada classe dos test e treino
 #----------
 porcentagem_do_treino = 50.0/100.0
-treino = []
-treino_labels = []
-test = []
-test_labels = []
-for c in classes[:n_classes_conhecidas]:
-    lc = labels_conhecidos[np.where(labels_conhecidos==c)]
-    oc = objetos_conhecidos[np.where(labels_conhecidos==c)]
-    np.random.seed(1)
-    i = np.random.permutation(len(oc))
-    treino = np.append(treino,oc[i[:int(len(i)*porcentagem_do_treino)]])
-    treino_labels = np.append(treino_labels,lc[i[:int(len(i)*porcentagem_do_treino)]])
-    test = np.append(test,oc[i[int(len(i)*porcentagem_do_treino):]])
-    test_labels = np.append(test_labels,lc[i[int(len(i)*porcentagem_do_treino):]])
-
-test = np.append(test,objetos_desconhecidos)
-test_labels = np.append(test_labels,labels_desconhecidos)  
+treino = objetos_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
+treino_labels = labels_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
+test = np.append(objetos_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
+test_labels = np.append(labels_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
 
 #--
 # Passo 4
@@ -96,7 +78,6 @@ def get_neighbors(training_set,
 # Passo 6
 # Escolher a Classe ganhadora
 #----------
-from collections import Counter
 def vote_prob(neighbors):
     class_counter = Counter()
     for neighbor in neighbors:
@@ -104,24 +85,16 @@ def vote_prob(neighbors):
     labels, votes = zip(*class_counter.most_common())
     winner = class_counter.most_common(1)[0][0]
     votes4winner = class_counter.most_common(1)[0][1]
-    return winner, votes4winner/sum(votes)
-
+    if (votes4winner/sum(votes) > 0.5):
+        return winner, votes4winner/sum(votes)
+    else:
+        return 'unknow', votes4winner/sum(votes)
     
 #--
 # Passo 7
 # Preencher confusion Matriz
 #----------
-confusion_matrix = np.zeros([len(test_labels), len(test_labels)])
-for i in range(len(test)):
-    neighbors = get_neighbors(treino, 
-                              treino_labels, 
-                              test[i], 
-                              int(sys.argv[1]), 
-                              distance=distance)
-    print("index: ", i, 
-          ", vote_prob: ", vote_prob(neighbors), 
-          ", label: ", test_labels[i], 
-          ", data: ", test[i])
+
 #--
 # Passo 8
 # Calcular F-measure da Confusion Matriz

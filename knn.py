@@ -1,5 +1,6 @@
 #!/home/joao/anaconda3/bin/python3.6
 import numpy as np
+import sys
 from subprocess import PIPE, run
 
 #
@@ -17,9 +18,9 @@ for y in range(0,21):
    
 #print(labels[299])
 
-np.random.seed(2)
+np.random.seed(int(sys.argv[1]))
 indices = np.random.permutation(len(objetos))
-n_training_samples = 10
+n_training_samples = 5
 learnset_data = objetos[indices[:-n_training_samples]]
 learnset_labels = labels[indices[:-n_training_samples]]
 testset_data = objetos[indices[-n_training_samples:]]
@@ -98,7 +99,7 @@ def vote_prob(neighbors):
     labels, votes = zip(*class_counter.most_common())
     winner = class_counter.most_common(1)[0][0]
     votes4winner = class_counter.most_common(1)[0][1]
-    if (votes4winner/sum(votes) > 0.5):
+    if (votes4winner/sum(votes) > 0.1):
         return winner, votes4winner/sum(votes)
     else:
         return 'unknow', votes4winner/sum(votes)
@@ -107,7 +108,7 @@ for i in range(n_training_samples):
     neighbors = get_neighbors(learnset_data, 
                               learnset_labels, 
                               testset_data[i], 
-                              100, 
+                              int(sys.argv[2]), 
                               distance=distance)
     print("index: ", i, 
           ", vote_prob: ", vote_prob(neighbors), 
