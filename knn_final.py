@@ -2,7 +2,7 @@
 import numpy as np
 import sys
 from subprocess import PIPE, run
-
+distance_matrix = np.load('distance_matrix.npy')
 #--
 # Passo 1
 # Carregar classes
@@ -34,7 +34,7 @@ objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhec
 #test = 50% dos conhecido e desconhecidos
 #balanceando quantidade de cada classe dos test e treino
 #----------
-porcentagem_do_treino = 40.0/100.0
+porcentagem_do_treino = 50.0/100.0
 treino = []
 treino_labels = []
 test = []
@@ -60,6 +60,8 @@ def distance(instance1, instance2):
     command = ["bic/source/bin/bic_distance",instance1,instance2]
     result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     return float(result.stdout)
+def distance2(instance1, instance2):
+    return float(distance_matrix[np.where(objetos==instance1)[0][0]][np.where(objetos==instance2)[0][0]])
 #print(distance(learnset_data[1], learnset_data[2]))
 #print(distance(learnset_data[3], learnset_data[44]))
 
@@ -85,7 +87,7 @@ def get_neighbors(training_set,
     """
     distances = []
     for index in range(len(training_set)):
-        dist = distance(test_instance, training_set[index])
+        dist = distance2(test_instance, training_set[index])
         distances.append((training_set[index], dist, labels[index]))
     distances.sort(key=lambda x: x[1])
     neighbors = distances[:k]
@@ -110,20 +112,17 @@ def vote_prob(neighbors):
 # Passo 7
 # Preencher confusion Matriz
 #----------
-confusion_matrix = np.zeros([len(test_labels), len(test_labels)])
+confusion_matrix = np.zeros([n_classes_conhecidas, n_classes_conhecidas])
 for i in range(len(test)):
     neighbors = get_neighbors(treino, 
                               treino_labels, 
                               test[i], 
                               int(sys.argv[1]), 
                               distance=distance)
-    print("index: ", i, 
-          ", vote_prob: ", vote_prob(neighbors), 
-          ", label: ", test_labels[i], 
-          ", data: ", test[i])
+    #print("index: ",i,", vote_prob: ", vote_prob(neighbors),", label: ", test_labels[i],", data: ", test[i])
     confusion_matrix[np.where(classes==test_labels[i])[0][0]][np.where(classes==vote_prob(neighbors)[0])[0][0]] += 1
-    print(np.where(classes==test_labels[i])[0][0])
-    print(np.where(classes==vote_prob(neighbors)[0])[0][0])
+    #print(np.where(classes==test_labels[i])[0][0])
+    #print(np.where(classes==vote_prob(neighbors)[0])[0][0])
     #print(confusion_matrix)
 
 #--

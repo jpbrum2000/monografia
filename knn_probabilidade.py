@@ -1,3 +1,8 @@
+#!/home/joao/anaconda3/bin/python3.6
+import numpy as np
+import sys
+from subprocess import PIPE, run
+
 #--
 # Passo 1
 # Carregar classes
@@ -19,7 +24,8 @@ for y in range(0,21):
 n_classes_conhecidas = 20
 labels_conhecidos = labels[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
 objetos_conhecidos = objetos[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
-labels_desconhecidos = labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
+labels_desconhecidos = np.empty(len(labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]),dtype=object)
+labels_desconhecidos[:]='unknown'
 objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
 
 #--
@@ -27,12 +33,25 @@ objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhec
 # Dividir Treino e Teste
 #treino 50% dos conhecido 
 #test = 50% dos conhecido e desconhecidos
+#balanceando quantidade de cada classe dos test e treino
 #----------
-porcentagem_do_treino = 50.0/100.0
-treino = objetos_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
-treino_labels = labels_conhecidos[:int(len(labels_conhecidos)*porcentagem_do_treino)]
-test = np.append(objetos_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
-test_labels = np.append(labels_conhecidos[int(len(labels_conhecidos)*porcentagem_do_treino):],objetos_desconhecidos)
+porcentagem_do_treino = 99.0/100.0
+treino = []
+treino_labels = []
+test = []
+test_labels = []
+for c in classes[:n_classes_conhecidas]:
+    lc = labels_conhecidos[np.where(labels_conhecidos==c)]
+    oc = objetos_conhecidos[np.where(labels_conhecidos==c)]
+    np.random.seed(2)
+    i = np.random.permutation(len(oc))
+    treino = np.append(treino,oc[i[:int(len(i)*porcentagem_do_treino)]])
+    treino_labels = np.append(treino_labels,lc[i[:int(len(i)*porcentagem_do_treino)]])
+    test = np.append(test,oc[i[int(len(i)*porcentagem_do_treino):]])
+    test_labels = np.append(test_labels,lc[i[int(len(i)*porcentagem_do_treino):]])
+
+test = np.append(test,objetos_desconhecidos)
+test_labels = np.append(test_labels,labels_desconhecidos)  
 
 #--
 # Passo 4
@@ -41,8 +60,7 @@ test_labels = np.append(labels_conhecidos[int(len(labels_conhecidos)*porcentagem
 def distance(instance1, instance2):
     command = ["bic/source/bin/bic_distance",instance1,instance2]
     result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    
-    return result.stdout
+    return float(result.stdout)
 #print(distance(learnset_data[1], learnset_data[2]))
 #print(distance(learnset_data[3], learnset_data[44]))
 
@@ -78,6 +96,7 @@ def get_neighbors(training_set,
 # Passo 6
 # Escolher a Classe ganhadora
 #----------
+from collections import Counter
 def vote_prob(neighbors):
     class_counter = Counter()
     for neighbor in neighbors:
@@ -85,18 +104,99 @@ def vote_prob(neighbors):
     labels, votes = zip(*class_counter.most_common())
     winner = class_counter.most_common(1)[0][0]
     votes4winner = class_counter.most_common(1)[0][1]
-    if (votes4winner/sum(votes) > 0.5):
+    if (votes4winner/sum(votes) > 0.4):
         return winner, votes4winner/sum(votes)
     else:
-        return 'unknow', votes4winner/sum(votes)
+        return 'unknown', votes4winner/sum(votes)
     
 #--
 # Passo 7
 # Preencher confusion Matriz
+# Classes + 1 dos unknowns
 #----------
+confusion_matrix = np.zeros([n_classes_conhecidas+1, n_classes_conhecidas+1])
+for i in range(len(test)):
+    neighbors = get_neighbors(treino, 
+                              treino_labels, 
+                              test[i], 
+                              int(sys.argv[1]), 
+                              distance=distance)
+    print("index: ", i, 
+          ", vote_prob: ", vote_prob(neighbors), 
+          ", label: ", test_labels[i], 
+          ", data: ", test[i])
+    if(vote_prob(neighbors)[0] == 'unknown' and test_labels[i] == 'unknown'):
+        confusion_matrix[n_classes_conhecidas][n_classes_conhecidas] += 1
+    elif(vote_prob(neighbors)[0] == 'unknown'):
+        confusion_matrix[np.where(classes==test_labels[i])[0][0]][n_classes_conhecidas] += 1
+    elif(test_labels[i] == 'unknown'):
+        confusion_matrix[n_classes_conhecidas][np.where(classes==vote_prob(neighbors)[0])[0][0]] += 1
+    else:
+        confusion_matrix[np.where(classes==test_labels[i])[0][0]][np.where(classes==vote_prob(neighbors)[0])[0][0]] += 1
+    #print(confusion_matrix)
 
 #--
 # Passo 8
 # Calcular F-measure da Confusion Matriz
 #----------
+precision_macro = 0
+recall_macro = 0
+f_measure_macro = 0
+precision_micro = 0
+recall_micro = 0
+f_measure_micro = 0
+
+#Calcula precision_macro
+precision_macro=0.0
+for x in range(n_classes_conhecidas):
+    false_positive=0
+    for y in range(n_classes_conhecidas+1):
+        if (x!=y):
+            false_positive += confusion_matrix[y][x]
+    if(confusion_matrix[x][x]!=0):
+        precision_macro += confusion_matrix[x][x]/(confusion_matrix[x][x]+false_positive)
+precision_macro = precision_macro/n_classes_conhecidas
+#Calcula recall_macro
+recall_macro=0.0
+for x in range(n_classes_conhecidas):
+    false_negative=0
+    for y in range(n_classes_conhecidas+1):
+        if (x!=y):
+            false_negative += confusion_matrix[x][y]
+    if(confusion_matrix[x][x]!=0):
+        recall_macro += confusion_matrix[x][x]/(confusion_matrix[x][x]+false_negative)
+recall_macro = recall_macro/n_classes_conhecidas
+#Calcula f_measure_macro
+f_measure_macro = (2*precision_macro*recall_macro)/(precision_macro+recall_macro)
+
+#Calcula precision_micro
+sum_true_positive = 0
+sum_precision_divisor = 0
+for x in range(n_classes_conhecidas):
+    sum_false_positive = 0
+    for y in range(n_classes_conhecidas+1):
+        if (x!=y):
+            sum_false_positive += confusion_matrix[y][x]
+    sum_precision_divisor += confusion_matrix[x][x] + sum_false_positive
+    sum_true_positive += confusion_matrix[x][x]
+precision_micro = sum_true_positive/sum_precision_divisor
+#Calcula recall_micro
+sum_true_positive = 0
+sum_recall_divisor = 0
+for x in range(n_classes_conhecidas):
+    sum_false_negative = 0
+    for y in range(n_classes_conhecidas+1):
+        if (x!=y):
+            sum_false_negative += confusion_matrix[x][y]
+    sum_recall_divisor += confusion_matrix[x][x] + sum_false_negative
+    sum_true_positive += confusion_matrix[x][x]
+recall_micro = sum_true_positive/sum_recall_divisor
+
+#Calcula f_measure_micro
+f_measure_micro = (2*precision_micro*recall_micro)/(precision_micro+recall_micro)
+
+print('f_measure_macro ',f_measure_macro)
+print('f_measure_micro ',f_measure_micro)
+print('n ', int(sys.argv[1]))
+
 
