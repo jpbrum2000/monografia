@@ -1,0 +1,5 @@
+Num Classes,12,knn,(1, 0.61616161616161613) accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.4264705882352941, 0, 0.27775430577392934, 0.20279720279720281)
+Num Classes,12,knn,(5, 0.59469696969696961) accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.41911764705882354, 0, 0.26830348058622672, 0.1993006993006993)
+Num Classes,12,knn,(3, 0.59217171717171724) accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.43382352941176472, 0, 0.28174917290343005, 0.2062937062937063)
+Num Classes,12,knn,(9, 0.58459595959595967) accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.42892156862745096, 0, 0.27009852891413982, 0.203962703962704)
+Num Classes,12,knn,(7, 0.58207070707070707) accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.42892156862745096, 0, 0.27035492641763031, 0.203962703962704)

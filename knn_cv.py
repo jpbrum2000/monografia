@@ -71,8 +71,11 @@ def vote_prob(neighbors):
     labels, votes = zip(*class_counter.most_common())
     winner = class_counter.most_common(1)[0][0]
     votes4winner = class_counter.most_common(1)[0][1]
-    return winner, votes4winner/sum(votes)
-	
+    if(votes4winner/sum(votes)==1):
+        return winner, votes4winner/sum(votes)
+    else:
+        return 'unknow', votes4winner/sum(votes)
+
 #--
 # Passo 8
 # Preencher confusion Matriz

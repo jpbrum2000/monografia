@@ -38,7 +38,7 @@ def distance2(instance1, instance2):
 def get_neighbors(training_set, 
                   labels, 
                   test_instance, 
-                  k, 
+                  K, 
                   distance=distance):
     """
     get_neighbors calculates a list of the k nearest neighbors
@@ -56,43 +56,44 @@ def get_neighbors(training_set,
         dist = distance(test_instance, training_set[index])
         distances.append((training_set[index], dist, labels[index]))
     distances.sort(key=lambda x: x[1])
-    neighbors = distances[:k]
+    neighbors = distances[:]
     return neighbors
 
 #--
 # Passo 7
 # Escolher a Classe ganhadora
 #----------
-from collections import Counter
-def vote_prob(neighbors):
-    class_counter = Counter()
-    for neighbor in neighbors:
-        class_counter[neighbor[2]] += 1
-    labels, votes = zip(*class_counter.most_common())
-    winner = class_counter.most_common(1)[0][0]
-    votes4winner = class_counter.most_common(1)[0][1]
-    return winner, votes4winner/sum(votes)
-	
+def vote_prob(neighbors,T):
+    n1 = neighbors[0]
+    for x in neighbors[1:]:
+        if(x[2] != n1[2]):
+            n2=x
+            break
+    if((n1[1]/n2[1])<=T):
+        return n1[2], n1[1]/n2[1]
+    else:
+        return 'unknow', n1[1]/n2[1]
+
 #--
 # Passo 8
 # Preencher confusion Matriz
 #----------
-def confusion_matrix(n_classes_conhecidas, K, treino, treino_labels, test, test_labels):
+def confusion_matrix(n_classes_conhecidas, T, treino, treino_labels, test, test_labels):
 	confusion_matrix = np.zeros([n_classes_conhecidas+1, n_classes_conhecidas+1])
 	classes=np.append(np.unique(treino_labels),'unknow')
 	for i in range(len(test)):
 		neighbors = get_neighbors(treino, 
 								  treino_labels, 
 								  test[i], 
-								  int(K), 
+								  0, 
 								  distance=distance2)
 		#print("index: ",i,", vote_prob: ", vote_prob(neighbors),", label: ", test_labels[i],", data: ", test[i])
 		#print(np.where(classes==test_labels[i])[0][0])
 		#print(np.where(classes==vote_prob(neighbors)[0])[0][0])
 		#print(confusion_matrix)
 		if(any(classes==test_labels[i])):
-			confusion_matrix[np.where(classes==test_labels[i])[0][0]][np.where(classes==vote_prob(neighbors)[0])[0][0]] += 1
+			confusion_matrix[np.where(classes==test_labels[i])[0][0]][np.where(classes==vote_prob(neighbors,T)[0])[0][0]] += 1
 		else:
-			confusion_matrix[np.where(classes=='unknow')[0][0]][np.where(classes==vote_prob(neighbors)[0])[0][0]] += 1
+			confusion_matrix[np.where(classes=='unknow')[0][0]][np.where(classes==vote_prob(neighbors,T)[0])[0][0]] += 1
 	return confusion_matrix
 		
