@@ -127,7 +127,10 @@ def evaluated(n_classes_conhecidas, confusion_matrix):
 				sum_false_positive += confusion_matrix[y][x]
 		sum_precision_divisor += confusion_matrix[x][x] + sum_false_positive
 		sum_true_positive += confusion_matrix[x][x]
-	precision_micro = sum_true_positive/sum_precision_divisor
+	if(sum_true_positive==0):
+            precision_micro = 0
+	else:
+            precision_micro = sum_true_positive/sum_precision_divisor
 	#Calcula recall_micro
 	sum_true_positive = 0
 	sum_recall_divisor = 0
@@ -141,7 +144,7 @@ def evaluated(n_classes_conhecidas, confusion_matrix):
 	recall_micro = sum_true_positive/sum_recall_divisor
 	
 	#Calcula f_measure_micro
-	if(precison_micro == 0 or recall_micro == 0):
+	if(precision_micro == 0 or recall_micro == 0):
 		f_measure_micro = 0
 	else:
 		f_measure_micro = (2*precision_micro*recall_micro)/(precision_micro+recall_micro)
