@@ -165,8 +165,8 @@ n_classes = int(sys.argv[1])
 f = open('testes\knn_dr\knn_result_'+str(n_classes), 'a')
 for NA in [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]:
 	best_t = grid_search(n_classes,NA,0.5,1)[0][0]
-	ts = np.linspace(0.5,1,10)
-	best_tt = grid_search(n_classes,NA,ts[np.where(np.linspace(0.5,1,10)==best_t)[0][0]-1],ts[np.where(np.linspace(0.5,1,10)==best_t)[0][0]+1])[0][0]
+	space = 0.5/9
+	best_tt = grid_search(n_classes,NA,best_t-space,best_t+space)[0][0]
 	result = str('Num Classes,'+str(n_classes)+',knn(NA,T),'+str(NA)+','+str(best_tt)+' '+knn(best_tt,n_classes))
 	f.write(result)
 f.close()
