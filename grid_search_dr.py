@@ -1,6 +1,6 @@
 #!/home/joao/anaconda3/bin/python3.6
 import numpy as np
-import sys,math
+import sys, math
 import knn_dr
 
 #--
