@@ -1,1 +1,1 @@
-Num Classes,15,knn,2 accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.23529411764705882, 0.53500000000000003, 0.23802819571601899, 0.22450888681010289)
+Num Classes,15,knn,2 accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro(0.27600000000000002, 0.52666666666666662, 0.29583794793952206, 0.28532046864231558)
