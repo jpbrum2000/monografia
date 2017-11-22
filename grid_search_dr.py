@@ -45,10 +45,10 @@ def divide_training_test(FOLD, labels_conhecidos, objetos_conhecidos, labels_des
 	for c in np.unique(labels_conhecidos):
 		lc = labels_conhecidos[np.where(labels_conhecidos==c)]
 		oc = objetos_conhecidos[np.where(labels_conhecidos==c)]
-		treino = np.append(treino,np.concatenate(np.delete(np.array_split(oc,3),FOLD,axis=0)))
-		treino_labels = np.append(treino_labels,np.concatenate(np.delete(np.array_split(lc,3),FOLD,axis=0)))
-		test = np.append(test,np.array_split(oc,3)[FOLD])
-		test_labels = np.append(test_labels,np.array_split(lc,3)[FOLD])
+		treino = np.append(treino,np.concatenate(np.delete(np.array_split(oc,2),FOLD,axis=0)))
+		treino_labels = np.append(treino_labels,np.concatenate(np.delete(np.array_split(lc,2),FOLD,axis=0)))
+		test = np.append(test,np.array_split(oc,2)[FOLD])
+		test_labels = np.append(test_labels,np.array_split(lc,2)[FOLD])
 	test = np.append(test,objetos_desconhecidos)
 	test_labels = np.append(test_labels,labels_desconhecidos)
 	return treino, treino_labels, test, test_labels
@@ -146,13 +146,13 @@ def grid_search(n_classes_conhecidas,NA,T_first,T_last):
 	accuracies = []
 	for T in np.linspace(T_first,T_last,10):
 		accuracy_aux = 0
-		for FOLD in range(3):
+		for FOLD in range(2):
 			treino, treino_labels, test, test_labels = divide_training_test(0,*divide_know_unknow(n_classes_conhecidas,labels,objetos))
 			#confusion_matrix(n_classes_conhecidas, K, treino, treino_labels, test, test_labels)
 			confusion_matrix = knn_dr.confusion_matrix(math.ceil(n_classes_conhecidas/2), T, *divide_training_test(FOLD,*divide_know_unknow(math.ceil(n_classes_conhecidas/2),treino_labels,treino)))
 			accuracy_aux += evaluated(math.ceil(n_classes_conhecidas/2),confusion_matrix)[0]*NA+(1-NA)*evaluated(math.ceil(n_classes_conhecidas/2),confusion_matrix)[1]
 		#print(K,accuracy_aux/3)
-		accuracies.append((T,accuracy_aux/3))
+		accuracies.append((T,accuracy_aux/2))
 	accuracies.sort(key=lambda x: x[1],reverse=True)
 	return accuracies
 

@@ -1,6 +1,6 @@
 #!/home/joao/anaconda3/bin/python3.6
 import numpy as np
-import knn_final
+import knn as libknn
 import sys
 #--
 # Passo 1
@@ -44,10 +44,10 @@ def divide_training_test(FOLD, labels_conhecidos, objetos_conhecidos, labels_des
 	for c in np.unique(labels_conhecidos):
 		lc = labels_conhecidos[np.where(labels_conhecidos==c)]
 		oc = objetos_conhecidos[np.where(labels_conhecidos==c)]
-		treino = np.append(treino,np.concatenate(np.delete(np.array_split(oc,3),FOLD,axis=0)))
-		treino_labels = np.append(treino_labels,np.concatenate(np.delete(np.array_split(lc,3),FOLD,axis=0)))
-		test = np.append(test,np.array_split(oc,3)[FOLD])
-		test_labels = np.append(test_labels,np.array_split(lc,3)[FOLD])
+		treino = np.append(treino,np.concatenate(np.delete(np.array_split(oc,2),FOLD,axis=0)))
+		treino_labels = np.append(treino_labels,np.concatenate(np.delete(np.array_split(lc,2),FOLD,axis=0)))
+		test = np.append(test,np.array_split(oc,2)[FOLD])
+		test_labels = np.append(test_labels,np.array_split(lc,2)[FOLD])
 	test = np.append(test,objetos_desconhecidos)
 	test_labels = np.append(test_labels,labels_desconhecidos)
 	return treino, treino_labels, test, test_labels
@@ -145,24 +145,24 @@ def grid_search(n_classes_conhecidas):
 	accuracies = []
 	for K in [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45]:
 		accuracy_aux = 0
-		for FOLD in range(3):
+		for FOLD in range(2):
 			treino, treino_labels, test, test_labels = divide_training_test(0,*divide_know_unknow(n_classes_conhecidas,labels,objetos))
 			#confusion_matrix(n_classes_conhecidas, K, treino, treino_labels, test, test_labels)
-			confusion_matrix = knn_final.confusion_matrix(n_classes_conhecidas, K, *divide_training_test(FOLD,*divide_know_unknow(n_classes_conhecidas,treino_labels,treino)))
+			confusion_matrix = libknn.confusion_matrix(n_classes_conhecidas, K, *divide_training_test(FOLD,*divide_know_unknow(n_classes_conhecidas,treino_labels,treino)))
 			accuracy_aux += evaluated(n_classes_conhecidas,confusion_matrix)[0]
-		#print(K,accuracy_aux/3)
-		accuracies.append((K,accuracy_aux/3))
+		#print(K,accuracy_aux/2)
+		accuracies.append((K,accuracy_aux/2))
 	accuracies.sort(key=lambda x: x[1],reverse=True)
 	print(accuracies)
 	return accuracies
 
 def knn(K,n_classes_conhecidas):
-	confusion_matrix = knn_final.confusion_matrix(n_classes_conhecidas,K,*divide_training_test(0,*divide_know_unknow(n_classes_conhecidas,labels,objetos)))
+	confusion_matrix = libknn.confusion_matrix(n_classes_conhecidas,K,*divide_training_test(0,*divide_know_unknow(n_classes_conhecidas,labels,objetos)))
 	return 'accuracy_knows,accuracy_unknows,f_measure_macro,f_measure_micro'+str(evaluated(n_classes_conhecidas,confusion_matrix))
 
 n_classes = int(sys.argv[1])
-f = open('testes\knn_final\knn_result_'+str(n_classes), 'a')
-for K in grid_search(n_classes)[:5]:
-    result = str('Num Classes,'+str(n_classes)+',knn,'+str(K)+' '+knn(K[0],n_classes))
+f = open('testes\knn\knn_result_'+str(n_classes), 'a')
+for K in grid_search(n_classes)[:1]:
+    result = str('Num Classes,'+str(n_classes)+',knn,'+str(K)+' '+knn(K[0],n_classes)+'\n')
     f.write(result)
 f.close()
