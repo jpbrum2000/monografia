@@ -2,7 +2,7 @@
 import numpy as np
 import sys
 from subprocess import PIPE, run
-distance_matrix = np.load('distance_matrix.npy')
+distance_matrix = np.load('distance_matrix_l2.npy')
 #--
 # Passo 1
 # Carregar classes diretorio

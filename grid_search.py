@@ -143,7 +143,7 @@ def evaluated(n_classes_conhecidas, confusion_matrix):
 
 def grid_search(n_classes_conhecidas):
 	accuracies = []
-	for K in [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45]:
+	for K in [1,3,5,7,9,11,13,15,17,19,21]:
 		accuracy_aux = 0
 		for FOLD in range(2):
 			treino, treino_labels, test, test_labels = divide_training_test(0,*divide_know_unknow(n_classes_conhecidas,labels,objetos))
