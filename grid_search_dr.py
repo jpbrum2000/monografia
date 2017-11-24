@@ -24,6 +24,8 @@ for y in range(0,21):
 #----------
 def divide_know_unknow(n_classes_conhecidas,labels,objetos):
 	classes = np.unique(labels)
+	np.random.seed(1)
+	classes = np.random.permutation(classes)
 	labels_conhecidos = labels[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
 	objetos_conhecidos = objetos[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
 	labels_desconhecidos = labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]

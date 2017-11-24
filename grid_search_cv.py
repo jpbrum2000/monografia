@@ -24,6 +24,8 @@ for y in range(0,21):
 #----------
 def divide_know_unknow(n_classes_conhecidas,labels,objetos):
 	classes = np.unique(labels)
+	np.random.seed(2)
+	classes = np.random.permutation(classes)
 	labels_conhecidos = labels[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
 	objetos_conhecidos = objetos[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
 	labels_desconhecidos = labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
@@ -164,6 +166,6 @@ def knn(K,n_classes_conhecidas):
 n_classes = int(sys.argv[1])
 f = open('testes\knn_cv\knn_result_'+str(n_classes), 'a')
 for K in [2]:
-    result = str('Num Classes,'+str(n_classes)+',knn,'+str(K)+' '+knn(K,n_classes))
+    result = str('Num Classes,'+str(n_classes)+',knn,'+str(K)+' '+knn(K,n_classes)+'\n')
     f.write(result)
 f.close()

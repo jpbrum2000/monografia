@@ -1,4 +1,3 @@
-#!/home/joao/anaconda3/bin/python3.6
 import numpy as np
 import sys
 from subprocess import PIPE, run

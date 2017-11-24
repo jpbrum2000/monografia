@@ -1,10 +1,10 @@
-#!/home/joao/anaconda3/bin/python3.6
 import numpy as np
 import knn as libknn
 import sys
 #--
 # Passo 1
 # Carregar classes diretorio
+# Se usar a matrix de distancia 'distance_matrix.npy', não alterar a ordem das classes abaixo
 #----------
 objetos = np.empty([2100], dtype=object)
 labels = np.empty([2100], dtype=object)
@@ -15,19 +15,21 @@ for y in range(0,21):
         objetos[index] = "UCMerced_LandUse/Images/"+classes[y]+"/"+classes[y]+str(x).zfill(2) +".fv"
         labels[index] = classes[y]
         index += 1
-		
+
 #--
 # Passo 2
 # Definir Classes Conhecidas e das Classes Desconhecidas
 # return labels_conhecidos, objetos_conhecidos, labels_desconhecidos, objetos_desconhecidos
 #----------
 def divide_know_unknow(n_classes_conhecidas,labels,objetos):
-	classes = np.unique(labels)
-	labels_conhecidos = labels[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
-	objetos_conhecidos = objetos[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
-	labels_desconhecidos = labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
-	objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
-	return labels_conhecidos, objetos_conhecidos, labels_desconhecidos, objetos_desconhecidos
+    classes = np.unique(labels)
+    np.random.seed(1)
+    classes = np.random.permutation(classes)
+    labels_conhecidos = labels[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
+    objetos_conhecidos = objetos[np.where(np.in1d(labels,classes[:n_classes_conhecidas]))]
+    labels_desconhecidos = labels[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
+    objetos_desconhecidos = objetos[np.where(np.in1d(labels,classes[n_classes_conhecidas:]))]
+    return labels_conhecidos, objetos_conhecidos, labels_desconhecidos, objetos_desconhecidos
 
 #--
 # Passo 3

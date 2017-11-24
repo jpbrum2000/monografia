@@ -1,4 +1,7 @@
 import subprocess
+#--
+# Testa com numero de classes conhecidas 3,6,9,12,15,21
+#----------
 print(3)
 p1 = subprocess.Popen(["python","grid_search_cv.py",str(3)])
 print(6)

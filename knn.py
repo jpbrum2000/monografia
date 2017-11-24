@@ -1,11 +1,12 @@
-#!/home/joao/anaconda3/bin/python3.6
 import numpy as np
+import pandas as pd
 import sys
 from subprocess import PIPE, run
 distance_matrix = np.load('distance_matrix.npy')
 #--
 # Passo 1
 # Carregar classes diretorio
+# Se usar a matrix de distancia 'distance_matrix.npy', não alterar a ordem das classes abaixo
 #----------
 objetos = np.empty([2100], dtype=object)
 labels = np.empty([2100], dtype=object)
@@ -16,7 +17,7 @@ for y in range(0,21):
         objetos[index] = "UCMerced_LandUse/Images/"+classes[y]+"/"+classes[y]+str(x).zfill(2) +".fv"
         labels[index] = classes[y]
         index += 1
-		
+
 #--
 # Passo 2
 # Definir funcao de calculo de distancia distance
